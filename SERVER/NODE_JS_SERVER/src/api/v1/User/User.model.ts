@@ -1,19 +1,18 @@
-import { model, Schema, Document } from "mongoose";
+import mongoose, { model, Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
-import { Roles } from "../../../constants/enum";
 import Helper from "../../../utils/Helper";
+import Contact from "../Contacts/Contact.model";
+
+import { Emergency } from "../Contacts/Contact.model";
 interface IUser extends Document {
 	firstName: string;
 	lastName: string;
-	otherNames: string;
-	userId: string;
-	username: string;
 	email: string;
-	id: string;
-	role: Roles;
+	otherNames: string;
+	username: string;
 	password: string;
-	organization: string;
-	orgId: string;
+	address: string;
+	emergency_contacts: Emergency[];
 	isActive: boolean;
 	refreshTokens: string[];
 	// verifiedPassword: any;
@@ -23,15 +22,12 @@ const userSchema = new Schema<IUser>(
 	{
 		firstName: { type: String, required: true },
 		lastName: { type: String, required: true },
+		email: { type: String, required: true },
 		otherNames: String,
 		username: String,
-		email: String,
-		userId: String,
-		id: String,
-		role: { type: String, enum: Object.values(Roles) },
 		password: String,
-		organization: String,
-		orgId: String,
+		address: String,
+		emergency_contacts: [typeof Contact],
 		isActive: { type: Boolean, required: true, default: true },
 		refreshTokens: { type: [String] },
 	},
@@ -39,7 +35,8 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.pre("save", async function (next) {
-	this.username = await Helper.generateUsername(this.firstName, this.lastName, this.organization);
+	let address =this.address.split(" ")[this.address.split(" ").length - 2];
+	this.username = await Helper.generateUsername(this.firstName, this.lastName, address);
 });
 userSchema.pre("save", async function (next) {
 	if (!this.isModified("password")) {

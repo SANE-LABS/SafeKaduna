@@ -1,5 +1,6 @@
 import express, { NextFunction } from "express";
 import logger from "../../config/logger";
+import RequestValidationError from "../errors/ReqestValidationError";
 
 export class ApplicationError extends Error {
 	statusCode: number;
@@ -25,6 +26,9 @@ export async function ErrorHandler(err: any, req: express.Request, res: express.
 		ip: req.ip,
 	});
 
+	if (err instanceof RequestValidationError) {
+		console.log("req validation !!!!!!!!!");
+	}
 	return res.status(err?.statusCode || 500).json({
 		success: false,
 		status: err?.statusCode || 500,

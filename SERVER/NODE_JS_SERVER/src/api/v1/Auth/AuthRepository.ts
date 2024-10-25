@@ -22,7 +22,7 @@ class AuthRepository {
 
 	public async findUserByDetails(identifier: string): Promise<IUser | null> {
 		return await User.findOne({
-			$or: [{ email: identifier }, { userId: identifier }, { username: identifier }],
+			$or: [{ email: identifier }, { _id: identifier }, { username: identifier }],
 		});
 	}
 	public async removeRefreshToken(refreshToken: string): Promise<IUser | null> {

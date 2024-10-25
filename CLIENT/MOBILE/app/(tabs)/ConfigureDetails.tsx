@@ -11,6 +11,7 @@ import {
   useColorScheme,
 } from "react-native";
 import axios from "axios";
+import config from "@/config";
 
 interface EmergencyContact {
   id: string;
@@ -23,7 +24,7 @@ const EmergencyContactsScreen = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
-  const apiUrl = "";
+  const apiUrl = config.API_URL;
 
   const fetchContacts = async () => {
     try {
