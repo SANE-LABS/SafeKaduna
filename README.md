@@ -1,6 +1,6 @@
 # Community Safety App for Kaduna State
 
-### Team Name: [Your Group Name Here]
+### Team Name: Safe Kaduna
 
 ### Project Overview
 
