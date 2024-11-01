@@ -5,7 +5,7 @@ import UserService from "../User/User.service";
 import HttpStatusCodes from "../../../constants/HttpStatusCodes";
 import { ApplicationError } from "../../../utils/errorHandler";
 import Helper from "../../../utils/Helper";
-import RequestValidationError from "../../../errors/ReqestValidationError";
+import RequestValidationError from "../../../Exceptions/ValidationError";
 const { SuccessResponse } = Helper;
 
 @autoInjectable()
@@ -48,20 +48,20 @@ class AuthController {
 		return res.sendStatus(HttpStatusCodes.NO_CONTENT);
 	}
 
-	public async forgotPasswordRequest(req: Request, res: Response): Promise<Response> {
-		const email = req.body.email;
-		if (!email) throw new RequestValidationError("email is required");
+	// public async forgotPasswordRequest(req: Request, res: Response): Promise<Response> {
+	// 	const email = req.body.email;
+	// 	if (!email) throw new RequestValidationError("email is required");
 
-		await this.authService.forgotPasswordRequest(email);
-		return res.status(HttpStatusCodes.OK).json(SuccessResponse("mail sent successfully", ""));
-	}
+	// 	await this.authService.forgotPasswordRequest(email);
+	// 	return res.status(HttpStatusCodes.OK).json(SuccessResponse("mail sent successfully", ""));
+	// }
 
-	public async forgotPasswordReset(req: Request, res: Response): Promise<Response> {
-		const { token } = req.params;
-		if (!token) throw new RequestValidationError("token is required");
-		let resetResponse = await this.authService.ResetPassword(token);
-		return res.status(HttpStatusCodes.OK).json(resetResponse);
-	}
+	// public async forgotPasswordReset(req: Request, res: Response): Promise<Response> {
+	// 	const { token } = req.params;
+	// 	if (!token) throw new RequestValidationError("token is required");
+	// 	let resetResponse = await this.authService.ResetPassword(token);
+	// 	return res.status(HttpStatusCodes.OK).json(resetResponse);
+	// }
 }
 
 export default AuthController;

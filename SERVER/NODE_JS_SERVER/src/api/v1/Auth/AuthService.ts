@@ -22,14 +22,14 @@ export default class AuthService {
 	}
 
 	public async registerUser(username: string, password: string) {
-		const hashedPassword = await bcrypt.hash(password, 10);
-		const usernameExists = !!(await this.userRepository.findByUsername(username));
-		if (usernameExists) throw new ApplicationError("user already exists", HttpStatusCodes.BAD_REQUEST);
-		const newUser = await this.userRepository.createUser({
-			username,
-			password: hashedPassword,
-		});
-		return newUser;
+		// const hashedPassword = await bcrypt.hash(password, 10);
+		// const usernameExists = !!(await this.userRepository.findByUsername(username));
+		// if (usernameExists) throw new ApplicationError("user already exists", HttpStatusCodes.BAD_REQUEST);
+		// const newUser = await this.userRepository.createUser({
+		// 	username,
+		// 	password: hashedPassword,
+		// });
+		// return newUser;
 	}
 
 	public async loginUser(identifier: string, password: string) {

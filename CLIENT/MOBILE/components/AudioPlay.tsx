@@ -1,142 +1,91 @@
-import { useState, useEffect } from "react";
-import { View, StyleSheet, Button } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Button, Text } from "react-native";
 import { Audio } from "expo-av";
-import socket from "../utils/socket";
+import * as FileSystem from "expo-file-system";
+import socket from "@/utils/socket";
 
-export default function App() {
+const RECORDING_INTERVAL_MS = 10000;
+
+export default function AudioStreamRecorder() {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isChunkRecording, setIsChunkRecording] = useState(false);  // Manage chunk state
-  const [permissionResponse, requestPermission] = Audio.usePermissions();
-  const [isStopping, setIsStopping] = useState(false);  // Prevent multiple stop events
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (isRecording && !isChunkRecording) {
-      startChunkRecording();
-    } else {
-      stopChunkRecording();
-    }
+  const recordingSettings: Audio.RecordingOptions =
+    Audio.RecordingOptionsPresets.HIGH_QUALITY;
 
-    return () => {
-      stopChunkRecording();
-    };
-  }, [isRecording]);
-
-  async function startRecording() {
-    if (permissionResponse?.status !== "granted") {
-      console.log("Requesting permission...");
-      await requestPermission();
-    }
-
-    if (permissionResponse?.status === "granted") {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      setIsRecording(true);
-      console.log("Recording started");
-    } else {
-      console.log("Permission to access microphone not granted");
-    }
-  }
-
-  async function stopRecording() {
-    if (!isStopping) {
-      setIsStopping(true);
-      setIsRecording(false);
-      await stopChunkRecording();
-      setIsStopping(false);
-    }
-  }
-
-  async function startChunkRecording() {
-    if (isChunkRecording || isStopping) return;  // Prevent multiple starts or stopping issues
-    setIsChunkRecording(true);
-
+  const startRecording = async (): Promise<void> => {
     try {
+      console.log("Requesting recording permissions...");
+      const permission = await Audio.requestPermissionsAsync();
+      if (!permission.granted) {
+        console.log("Permission to access microphone is required!");
+        return;
+      }
+
+      console.log("Starting recording...");
       const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        recordingSettings
       );
       setRecording(recording);
-      console.log("Chunk recording started");
+      setIsRecording(true);
 
-      setTimeout(async () => {
-        await stopAndSendChunk(recording);
-        if (isRecording) {
-          startChunkRecording();  // Start next chunk if still recording
-        }
-      }, 10000);  // 10 seconds chunk duration
-    } catch (error) {
-      console.error("Failed to start chunk recording", error);
-      setIsChunkRecording(false);
+      const id = setInterval(
+        () => sendAudioChunk(recording),
+        RECORDING_INTERVAL_MS
+      );
+      setIntervalId(id);
+    } catch (err) {
+      console.error("Failed to start recording", err);
     }
-  }
+  };
 
-  async function stopAndSendChunk(currentRecording: Audio.Recording) {
+  const sendAudioChunk = async (recording: Audio.Recording): Promise<void> => {
     try {
-      if (currentRecording) {
-        await currentRecording.stopAndUnloadAsync();
-        const uri = currentRecording.getURI();
-        console.log("Chunk recording stopped:", uri);
+      const uri = recording.getURI();
+      if (uri) {
+        const audioData = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
 
-        if (uri) {
-          const audioData = await fetchAudioData(uri);
-          if (audioData) {
-            sendAudioChunk(audioData);
-          }
-        }
-
-        setRecording(null);
+        socket.emit("audioChunk", { chunk: audioData });
+        console.log("Audio chunk sent to server via socket");
+        await FileSystem.deleteAsync(uri);
       }
     } catch (error) {
-      console.error("Error stopping and sending chunk", error);
-    } finally {
-      setIsChunkRecording(false);  // Ensure chunk recording state is reset
+      console.error("Error sending audio chunk:", error);
     }
-  }
+  };
 
-  async function fetchAudioData(uri: string) {
-    try {
-      const audioData = await fetch(uri);
-      const audioBlob = await audioData.blob();
-      return audioBlob;
-    } catch (error) {
-      console.error("Error fetching audio data:", error);
-      return null;
+  const stopRecording = async (): Promise<void> => {
+    console.log("Stopping recording...");
+    setIsRecording(false);
+
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
     }
-  }
 
-  async function sendAudioChunk(audioBlob: Blob | null) {
-    if (!audioBlob) return;
-    const reader = new FileReader();
-    reader.readAsDataURL(audioBlob);
-    reader.onloadend = () => {
-      const base64Audio = reader.result;
-      socket.emit("audioChunk", base64Audio);
-      console.log("Audio chunk sent.");
-    };
-  }
-
-  async function stopChunkRecording() {
     if (recording) {
-      try {
-        await recording.stopAndUnloadAsync();
-        setRecording(null);
-      } catch (error) {
-        console.error("Error stopping recording:", error);
-      }
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      console.log("Recording stopped and stored at", uri);
+      setRecording(null);
     }
+  };
 
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-    });
-    console.log("Recording stopped");
-    setIsChunkRecording(false);  // Ensure chunk state is reset
-  }
-console.log(process.env.EXPO_PUBLIC_ENVIRONMENT);
+  useEffect(() => {
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      if (recording) recording.stopAndUnloadAsync();
+    };
+  }, [intervalId, recording]);
+
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>
+        {isRecording ? "Recording..." : "Press Start to begin recording"}
+      </Text>
       <Button
         title={isRecording ? "Stop Recording" : "Start Recording"}
         onPress={isRecording ? stopRecording : startRecording}
@@ -144,12 +93,3 @@ console.log(process.env.EXPO_PUBLIC_ENVIRONMENT);
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "#ecf0f1",
-    padding: 10,
-  },
-});
