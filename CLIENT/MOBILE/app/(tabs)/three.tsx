@@ -35,7 +35,7 @@ export default function TabTwoScreen() {
         {" "}
         Record Audio
       </Text>
-      <AudioRecorder />
+      <AudioRecorder/>
     </View>
   );
 }

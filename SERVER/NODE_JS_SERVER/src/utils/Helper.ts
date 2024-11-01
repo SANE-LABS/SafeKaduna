@@ -20,11 +20,11 @@ class Helper {
 		return generatedUsername;
 	}
 
-	public static SuccessResponse<T>(body: string, data: T) {
+	public static SuccessResponse<T>(message: string, data?: T) {
 		return {
 			success: true,
-			message: body,
-			data,
+			message,
+			data: data ?? {}, 
 		};
 	}
 }

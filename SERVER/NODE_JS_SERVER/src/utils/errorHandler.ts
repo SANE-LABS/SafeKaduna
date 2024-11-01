@@ -1,6 +1,6 @@
 import express, { NextFunction } from "express";
 import logger from "../../config/logger";
-import RequestValidationError from "../errors/ReqestValidationError";
+import RequestValidationError from "../Exceptions/ValidationError";
 
 export class ApplicationError extends Error {
 	statusCode: number;

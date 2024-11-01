@@ -4,7 +4,7 @@ import Helper from "../../../utils/Helper";
 import Contact from "../Contacts/Contact.model";
 
 import { Emergency } from "../Contacts/Contact.model";
-interface IUser extends Document {
+interface IUser extends mongoose.Document {
 	firstName: string;
 	lastName: string;
 	email: string;
@@ -17,7 +17,8 @@ interface IUser extends Document {
 	refreshTokens: string[];
 	// verifiedPassword: any;
 }
-type IUserDocument = IUser & Document;
+// type IUserDocument = IUser & Document;
+
 const userSchema = new Schema<IUser>(
 	{
 		firstName: { type: String, required: true },
@@ -35,7 +36,7 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.pre("save", async function (next) {
-	let address =this.address.split(" ")[this.address.split(" ").length - 2];
+	let address = this.address.split(" ")[this.address.split(" ").length - 2];
 	this.username = await Helper.generateUsername(this.firstName, this.lastName, address);
 });
 userSchema.pre("save", async function (next) {
@@ -52,5 +53,5 @@ userSchema.methods.verifiedPassword = async function (enteredPassword: string) {
 
 let User = model("User", userSchema);
 User.syncIndexes();
-export { IUserDocument, IUser };
+export { IUser };
 export default User;
