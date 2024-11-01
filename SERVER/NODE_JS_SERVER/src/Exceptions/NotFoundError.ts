@@ -1,10 +1,13 @@
 import statusCodes from "../constants/HttpStatusCodes";
-export default class NotFound extends Error {
+import CustomError from "./customErrors";
+export default class NotFound extends CustomError {
 	message: string;
 	statusCode: number;
+	errors?: [any] | undefined;
 	constructor(message: string) {
-		super(message);
+		super();
 		this.message = message;
 		this.statusCode = statusCodes.NOT_FOUND;
 	}
 }
+

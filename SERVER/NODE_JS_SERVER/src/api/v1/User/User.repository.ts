@@ -1,9 +1,11 @@
 import User, { IUser } from "./User.model";
 import { Emergency } from "../Contacts/Contact.model";
 import { RootFilterQuery } from "mongoose";
+import { autoInjectable } from "tsyringe";
+@autoInjectable()
 export class UserRepository {
 	constructor() {}
-	public async createUser(userData: { username: string; password: string }): Promise<IUser> {
+	public async createUser(userData: IUser): Promise<IUser> {
 		const newUser = new User(userData);
 		return await newUser.save();
 	}
