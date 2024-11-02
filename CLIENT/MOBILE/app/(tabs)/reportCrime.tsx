@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, StyleSheet, useColorScheme } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  useColorScheme,
+  TextInput,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { Picker } from "@react-native-picker/picker";
@@ -13,6 +20,7 @@ const ReportCrime: React.FC = () => {
   const [attachment, setAttachment] = useState<string | null>(null);
   const [userCategory, setUserCategory] = useState<string>("");
   const [crimeType, setCrimeType] = useState<string>("");
+  const [description, setDescription] = useState<string>(""); // State for description
   const [location, setLocation] = useState<LocationType>({
     latitude: null,
     longitude: null,
@@ -58,6 +66,7 @@ const ReportCrime: React.FC = () => {
       attachment,
       userCategory,
       crimeType,
+      description, // Include description in the report
       location,
     };
     console.log("Crime Report:", crimeReport);
@@ -98,6 +107,18 @@ const ReportCrime: React.FC = () => {
         <Picker.Item label="Other" value="Other" />
       </Picker>
 
+      {/* Description Input */}
+      <Text style={styles.label}>Description:</Text>
+      <TextInput
+        style={styles.textInput}
+        placeholder="Provide additional details about the crime"
+        value={description}
+        onChangeText={setDescription}
+        multiline
+        numberOfLines={4}
+        textAlignVertical="top"
+      />
+
       {/* Attachment */}
       <Button title="Attach Image" onPress={pickImage} />
       {attachment && (
@@ -114,7 +135,6 @@ const ReportCrime: React.FC = () => {
         <Text style={styles.text}>Fetching location...</Text>
       )}
 
-
       <Button
         title="Submit Report"
         onPress={handleSubmit}
@@ -123,7 +143,6 @@ const ReportCrime: React.FC = () => {
     </View>
   );
 };
-
 
 const lightStyles = StyleSheet.create({
   container: {
@@ -151,8 +170,16 @@ const lightStyles = StyleSheet.create({
   text: {
     color: "#333",
   },
+  textInput: {
+    height: 100,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    color: "#333",
+  },
 });
-
 
 const darkStyles = StyleSheet.create({
   container: {
@@ -178,6 +205,15 @@ const darkStyles = StyleSheet.create({
     marginVertical: 10,
   },
   text: {
+    color: "#ffffff",
+  },
+  textInput: {
+    height: 100,
+    borderColor: "#888",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    backgroundColor: "#333333",
     color: "#ffffff",
   },
 });
