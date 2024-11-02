@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Button, Text } from "react-native";
+import { View, Button, Text, StyleSheet, useColorScheme } from "react-native";
 import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import socket from "@/utils/socket";
@@ -10,6 +10,9 @@ export default function AudioStreamRecorder() {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+
+  // Get the current color scheme (light or dark)
+  const colorScheme = useColorScheme();
 
   const recordingSettings: Audio.RecordingOptions =
     Audio.RecordingOptionsPresets.HIGH_QUALITY;
@@ -81,15 +84,75 @@ export default function AudioStreamRecorder() {
     };
   }, [intervalId, recording]);
 
+  // Dynamic styles based on color scheme
+  const styles = colorScheme === "dark" ? darkStyles : lightStyles;
+
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>
+    <View style={styles.container}>
+      <Text style={styles.workInProgress}>Work in Progress</Text>
+      <Text style={styles.title}>Audio Stream Recorder</Text>
+      <Text style={styles.status}>
         {isRecording ? "Recording..." : "Press Start to begin recording"}
       </Text>
       <Button
         title={isRecording ? "Stop Recording" : "Start Recording"}
         onPress={isRecording ? stopRecording : startRecording}
+        color={isRecording ? "#ff6347" : "#1e90ff"} // Different colors based on recording state
       />
     </View>
   );
 }
+
+const lightStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 10,
+  },
+  status: {
+    fontSize: 16,
+    color: "#666666",
+    marginVertical: 10,
+  },
+  workInProgress: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ff9900", // Color for the work in progress text
+    marginBottom: 20,
+  },
+});
+
+const darkStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginBottom: 10,
+  },
+  status: {
+    fontSize: 16,
+    color: "#aaaaaa",
+    marginVertical: 10,
+  },
+  workInProgress: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ff9900", // Color for the work in progress text
+    marginBottom: 20,
+  },
+});

@@ -31,7 +31,9 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Map",
-          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="paper-plane" color={color} />
+          ),
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -60,15 +62,19 @@ export default function TabLayout() {
       <Tabs.Screen
         name="three"
         options={{
-          title: "Tab Three",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "Sound",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="file-audio-o" color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="reportCrime"
         options={{
           title: "Report",
-          tabBarIcon: ({ color }) => <TabBarIcon name="comment" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="comment" color={color} />
+          ),
         }}
       />
     </Tabs>
